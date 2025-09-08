@@ -312,6 +312,7 @@ def process_meeting():
 
         # Speaker Recognition
         speaker_id = None
+        speaker_user_id = None
         speaker_name = "Unknown"
         speaker_confidence = 0.0
         
@@ -341,15 +342,16 @@ def process_meeting():
                 if sb_speaker_id and sb_confidence > 0.4:
                     # Get speaker name from database
                     speaker_result = supabase.table("speakers").select(
-                        "user_id, name"
+                        "id, user_id, name"
                     ).eq("id", sb_speaker_id).execute()
                     
                     if speaker_result.data:
                         speaker_data = speaker_result.data[0]
-                        speaker_id = speaker_data["user_id"]
+                        speaker_id = speaker_data["id"]  # Use UUID for database FK
+                        speaker_user_id = speaker_data["user_id"]  # Keep user_id for display
                         speaker_name = speaker_data["name"]
                         speaker_confidence = float(sb_confidence)
-                        print(f"[Meeting] Identified speaker: {speaker_name} ({speaker_id})")
+                        print(f"[Meeting] Identified speaker: {speaker_name} ({speaker_user_id})")
                     
             else:
                 print("[Meeting] No speaker embeddings found in database")
@@ -437,7 +439,7 @@ def process_meeting():
         return jsonify({
             "success": success,
             "meeting_id": meeting_id,
-            "speaker_id": speaker_id,
+            "speaker_id": speaker_user_id,  # Return user_id for frontend
             "speaker_name": speaker_name,
             "speaker_confidence": speaker_confidence,
             "transcript": transcript
