@@ -1,0 +1,28 @@
+flask>=2.0.0
+flask-cors>=3.0.0
+numpy>=1.20.0
+librosa>=0.8.0
+SpeechRecognition>=3.8.0
+soundfile>=0.10.0
+python-dotenv>=0.19.0
+pydub>=0.25.0
+
+# Supabase integration
+supabase>=1.0.0
+
+# SpeechBrain for speaker recognition
+speechbrain>=0.5.0
+torch>=1.9.0
+torchaudio>=0.9.0
+
+# OpenAI Whisper for transcription
+openai-whisper>=20230314
+
+# Audio processing
+scipy>=1.7.0
+
+# Optional but recommended for better performance
+
+# For development and testing
+pytest>=6.0.0
+requests>=2.25.0
