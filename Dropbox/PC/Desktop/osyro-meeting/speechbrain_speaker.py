@@ -4,6 +4,8 @@ import numpy as np
 import os
 import tempfile
 import shutil
+import librosa
+import soundfile as sf
 
 class SpeechBrainSpeakerRecognizer:
     def __init__(self, model_source="speechbrain/spkrec-ecapa-voxceleb"):
@@ -38,10 +40,14 @@ class SpeechBrainSpeakerRecognizer:
             
         embedding = self._extract_embedding_safe(audio_path)
         if embedding is not None:
-            print(f"[SpeechBrain] Successfully extracted embedding for {speaker_id}, shape: {embedding.shape}")
+            print(f"[SpeechBrain] ✅ Successfully extracted embedding for {speaker_id}")
+            print(f"[SpeechBrain] Embedding shape: {embedding.shape}")
+            print(f"[SpeechBrain] Embedding dtype: {embedding.dtype}")
+            print(f"[SpeechBrain] Embedding min/max: {embedding.min():.4f}/{embedding.max():.4f}")
+            print(f"[SpeechBrain] Embedding mean: {embedding.mean():.4f}")
             return embedding
         else:
-            print(f"[SpeechBrain] Failed to extract embedding for {speaker_id}")
+            print(f"[SpeechBrain] ❌ Failed to extract embedding for {speaker_id}")
             return None
 
     def identify_speaker(self, audio_path, external_embeddings):
@@ -91,7 +97,7 @@ class SpeechBrainSpeakerRecognizer:
         return best_id, best_score
 
     def _extract_embedding_safe(self, audio_path):
-        """Extract embedding with comprehensive error handling and path fixes"""
+        """Extract embedding with simplified, robust approach"""
         try:
             # Normalize and validate the path
             audio_path = os.path.normpath(str(audio_path))
@@ -100,48 +106,69 @@ class SpeechBrainSpeakerRecognizer:
                 print(f"[SpeechBrain] Audio file not found: {audio_path}")
                 return None
                 
-            # Check if file is readable
-            try:
-                with open(audio_path, 'rb') as f:
-                    f.read(1)
-            except Exception as e:
-                print(f"[SpeechBrain] Cannot read audio file: {e}")
-                return None
+            print(f"[SpeechBrain] Processing audio file: {audio_path}")
+            print(f"[SpeechBrain] File size: {os.path.getsize(audio_path)} bytes")
             
-            # Create a temporary copy in a simple location to avoid path issues
-            temp_dir = tempfile.gettempdir()
-            temp_filename = f"speechbrain_temp_{os.getpid()}_{hash(audio_path) % 10000}.wav"
-            temp_path = os.path.join(temp_dir, temp_filename)
+            # Use librosa to load and preprocess audio properly
+            print(f"[SpeechBrain] Loading audio with librosa...")
+            audio_data, sr = librosa.load(audio_path, sr=16000, mono=True)
+            print(f"[SpeechBrain] Librosa loaded: shape={audio_data.shape}, sr={sr}")
             
-            try:
-                # Copy the file to temp location
-                shutil.copy2(audio_path, temp_path)
-                print(f"[SpeechBrain] Created temp copy: {temp_path}")
-                
-                # Extract embedding from temp file
-                signal = self.classifier.load_audio(temp_path)
+            # Ensure minimum length (3 seconds for good speaker recognition)
+            min_length = 16000 * 3  # 3 seconds at 16kHz
+            if len(audio_data) < min_length:
+                print(f"[SpeechBrain] Audio too short ({len(audio_data)/16000:.2f}s), padding to 3s")
+                audio_data = np.pad(audio_data, (0, min_length - len(audio_data)), mode='constant')
+            
+            # Limit maximum length (30 seconds)
+            max_length = 16000 * 30
+            if len(audio_data) > max_length:
+                print(f"[SpeechBrain] Audio too long ({len(audio_data)/16000:.2f}s), truncating to 30s")
+                audio_data = audio_data[:max_length]
+            
+            # Normalize audio
+            audio_data = librosa.util.normalize(audio_data)
+            
+            # Convert to torch tensor directly
+            print(f"[SpeechBrain] Converting to torch tensor...")
+            signal = torch.tensor(audio_data, dtype=torch.float32)
+            
+            # Ensure proper shape for SpeechBrain (batch_size=1, samples)
+            if signal.dim() == 1:
+                signal = signal.unsqueeze(0)  # Add batch dimension
+            
+            print(f"[SpeechBrain] Signal tensor shape: {signal.shape}")
+            print(f"[SpeechBrain] Signal dtype: {signal.dtype}")
+            
+            # Extract embedding directly without file I/O
+            print(f"[SpeechBrain] Encoding signal to embedding...")
+            with torch.no_grad():  # Disable gradient computation for inference
                 emb = self.classifier.encode_batch(signal)
-                emb_np = emb.squeeze().cpu().numpy()
+                print(f"[SpeechBrain] Raw embedding tensor shape: {emb.shape}")
                 
-                print(f"[SpeechBrain] Successfully extracted embedding, shape: {emb_np.shape}")
+                # Convert to numpy
+                emb_np = emb.squeeze().cpu().numpy()
+                print(f"[SpeechBrain] Final embedding numpy shape: {emb_np.shape}")
+                print(f"[SpeechBrain] Embedding dtype: {emb_np.dtype}")
+                print(f"[SpeechBrain] Embedding stats - min: {emb_np.min():.4f}, max: {emb_np.max():.4f}, mean: {emb_np.mean():.4f}")
+                
+                # Validate embedding
+                if emb_np.size == 0:
+                    print(f"[SpeechBrain] ❌ Empty embedding generated")
+                    return None
+                if np.any(np.isnan(emb_np)):
+                    print(f"[SpeechBrain] ❌ NaN values in embedding")
+                    return None
+                if np.any(np.isinf(emb_np)):
+                    print(f"[SpeechBrain] ❌ Infinite values in embedding")
+                    return None
+                
+                print(f"[SpeechBrain] ✅ Valid embedding extracted, shape: {emb_np.shape}")
                 return emb_np
                 
-            except Exception as e:
-                print(f"[SpeechBrain] Error during embedding extraction: {e}")
-                import traceback
-                traceback.print_exc()
-                return None
-            finally:
-                # Clean up temp file
-                if os.path.exists(temp_path):
-                    try:
-                        os.remove(temp_path)
-                        print(f"[SpeechBrain] Cleaned up temp file: {temp_path}")
-                    except Exception as cleanup_e:
-                        print(f"[SpeechBrain] Could not clean up temp file: {cleanup_e}")
-                        
         except Exception as e:
-            print(f"[SpeechBrain] Unexpected error in embedding extraction: {e}")
+            print(f"[SpeechBrain] Error in embedding extraction: {e}")
+            print(f"[SpeechBrain] Error type: {type(e).__name__}")
             import traceback
             traceback.print_exc()
             return None

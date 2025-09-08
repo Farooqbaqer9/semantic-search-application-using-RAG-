@@ -183,15 +183,43 @@ def enroll_speaker():
 
                 # Store embedding if available
                 if embedding is not None:
-                    embedding_data = {
-                        "speaker_id": supabase_speaker_id,
-                        "embedding_vector": embedding.tolist(),
-                        "feature_type": "speechbrain",
-                        "vector_dimension": len(embedding)
-                    }
+                    print(f"[DEBUG] Embedding received - Type: {type(embedding)}")
+                    print(f"[DEBUG] Embedding shape: {embedding.shape}")
+                    print(f"[DEBUG] Embedding dtype: {embedding.dtype}")
+                    print(f"[DEBUG] Embedding sample values: {embedding[:5]}")
                     
-                    emb_result = supabase.table("speaker_embeddings").insert(embedding_data).execute()
-                    print(f"[Enrollment] Speaker embedding stored: {emb_result}")
+                    try:
+                        # Convert to list
+                        print(f"[DEBUG] Converting embedding to list...")
+                        embedding_list = embedding.tolist()
+                        print(f"[DEBUG] Conversion successful - List length: {len(embedding_list)}")
+                        print(f"[DEBUG] First 5 values: {embedding_list[:5]}")
+                        
+                        embedding_data = {
+                            "speaker_id": supabase_speaker_id,
+                            "embedding_vector": embedding_list,
+                            "feature_type": "speechbrain",
+                            "vector_dimension": len(embedding_list)
+                        }
+                        
+                        print(f"[DEBUG] Embedding data prepared: speaker_id={supabase_speaker_id}, dimension={len(embedding_list)}")
+                        print(f"[DEBUG] Attempting to insert into speaker_embeddings table...")
+                        
+                        emb_result = supabase.table("speaker_embeddings").insert(embedding_data).execute()
+                        
+                        print(f"[DEBUG] Database insert result: {emb_result}")
+                        if emb_result.data:
+                            print(f"[Enrollment] ✅ Speaker embedding stored successfully: ID {emb_result.data[0]['id']}")
+                        else:
+                            print(f"[Enrollment] ❌ No data returned from embedding insert")
+                            
+                    except Exception as embedding_error:
+                        print(f"[Enrollment] ❌ Embedding storage error: {embedding_error}")
+                        print(f"[DEBUG] Error type: {type(embedding_error)}")
+                        import traceback
+                        traceback.print_exc()
+                else:
+                    print(f"[Enrollment] ❌ No embedding received from SpeechBrain")
 
         except Exception as e:
             print(f"[Enrollment] Database error: {e}")
