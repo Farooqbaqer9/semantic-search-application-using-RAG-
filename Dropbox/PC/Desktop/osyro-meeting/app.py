@@ -45,18 +45,30 @@ def add_cors_headers(response):
 speechbrain_speaker = SpeechBrainSpeakerRecognizer()
 #transcription_service = TranscriptionService()
 
-# Initialize Whisper model
+# Initialize Whisper model with better hierarchy and GPU support
 whisper_transcriber = None
 try:
-    whisper_transcriber = WhisperTranscriber(model_size='base')  # Use base model for better accuracy
-    print("Whisper ASR model loaded and ready.")
+    # Try small model first (best for GTX 1650)
+    print("🚀 Attempting to load Whisper 'small' model with GPU support...")
+    whisper_transcriber = WhisperTranscriber(model_size='small')
+    print("✅ Whisper 'small' model loaded successfully")
 except Exception as e:
-    print(f"Could not load Whisper model: {e}")
+    print(f"❌ Could not load Whisper 'small' model: {e}")
     try:
-        whisper_transcriber = WhisperTranscriber(model_size='tiny')  # Fallback to tiny
-        print("Whisper ASR tiny model loaded as fallback.")
+        # Fallback to base model
+        print("🔄 Attempting to load Whisper 'base' model...")
+        whisper_transcriber = WhisperTranscriber(model_size='base')
+        print("✅ Whisper 'base' model loaded as fallback")
     except Exception as e2:
-        print(f"Could not load any Whisper model: {e2}")
+        print(f"❌ Could not load Whisper 'base' model: {e2}")
+        try:
+            # Final fallback to tiny model
+            print("🔄 Attempting to load Whisper 'tiny' model as final fallback...")
+            whisper_transcriber = WhisperTranscriber(model_size='tiny')
+            print("✅ Whisper 'tiny' model loaded as final fallback")
+        except Exception as e3:
+            print(f"❌ Could not load any Whisper model: {e3}")
+            whisper_transcriber = None
 
 def create_temp_file(audio_bytes, file_extension='.wav'):
     """Create a temporary file with proper cleanup"""
