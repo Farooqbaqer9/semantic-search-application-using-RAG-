@@ -21,7 +21,8 @@ openai-whisper>=20230314
 # Audio processing
 scipy>=1.7.0
 
-# Optional but recommended for better performance
+# Gunicorn for production deployment
+gunicorn>=20.0.0
 
 # For development and testing
 pytest>=6.0.0

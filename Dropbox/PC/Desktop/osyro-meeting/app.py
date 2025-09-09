@@ -8,9 +8,10 @@ import shutil
 import tempfile
 import time
 
-# Replace with your actual Supabase project URL and API key
-SUPABASE_URL = "https://cnzgjgtjxcnkmlmxggxo.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNuemdqZ3RqeGNua21sbXhnZ3hvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NzMyMjc5OSwiZXhwIjoyMDcyODk4Nzk5fQ.d6nQP6D167xpFa44Hk6vtAltuK_5HG4OzkxQkfB6JuE"
+
+# Load secrets from environment variables (set in .env or cloud dashboard)
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 from flask_cors import CORS
@@ -30,7 +31,8 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configure CORS properly to allow connections from the frontend
-CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST", "OPTIONS"], 
+FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "https://meeting_roomAI.com")
+CORS(app, resources={r"/*": {"origins": FRONTEND_ORIGIN, "methods": ["GET", "POST", "OPTIONS"], 
                             "allow_headers": ["Content-Type", "Authorization"]}})
 
 # Add a global response header middleware

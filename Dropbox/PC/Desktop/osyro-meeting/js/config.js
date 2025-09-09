@@ -1,7 +1,12 @@
 // API Configuration for Oysro Meeting Room
 const API_CONFIG = {
     // Backend API base URL
-    BASE_URL: 'http://localhost:5000',
+    // To switch environments, comment or uncomment the appropriate BASE_URL line below:
+    // For local development, use:
+    //BASE_URL: 'http://localhost:5000', // <-- Uncomment this line for local development
+    // For production, use:
+     BASE_URL: 'https://your-backend-domain.com', // <-- Uncomment this line for production and comment out the local line above
+    // Only one BASE_URL line should be active (not commented) at a time.
     
     // API endpoints
     ENDPOINTS: {
