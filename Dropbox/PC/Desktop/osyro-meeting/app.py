@@ -1,4 +1,8 @@
 import os
+from dotenv import load_dotenv
+# Load environment variables from .env before anything else
+load_dotenv()
+
 import uuid
 import json
 import numpy as np
@@ -15,7 +19,6 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 from flask_cors import CORS
-from dotenv import load_dotenv
 from pathlib import Path
 
 # Import our custom modules
@@ -23,9 +26,6 @@ from speechbrain_speaker import SpeechBrainSpeakerRecognizer
  #from transcription_service import TranscriptionService
 from audio_text_utils import clean_transcript, convert_webm_to_wav
 from whisper_transcriber import WhisperTranscriber
-
-# Load environment variables if any
-load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -643,7 +643,9 @@ if __name__ == '__main__':
     print("="*50)
     print("Starting Oysro Meeting Room API Server...")
     print("API available at: http://localhost:5000/api")
-    print("Make sure the frontend is also running on http://localhost:8000")
+    frontend_url = os.environ.get("FRONTEND_ORIGIN", "https://meeting_roomAI.com")
+    print(f"Frontend should connect to: {frontend_url}")
+    print("Make sure the frontend is also running and configured to use this backend URL.")
     print("="*50)
     
     # Test Supabase connection
