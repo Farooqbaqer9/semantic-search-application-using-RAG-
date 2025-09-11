@@ -3,8 +3,8 @@
 Copy these into your deployment platform's environment variables section:
 
 ```
-SUPABASE_URL=your-supabase-url
-SUPABASE_KEY=your-supabase-key
+SUPABASE_URL=yhttps://cnzgjgtjxcnkmlmxggxo.supabase.co
+SUPABASE_KEY=yJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNuemdqZ3RqeGNua21sbXhnZ3hvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NzMyMjc5OSwiZXhwIjoyMDcyODk4Nzk5fQ.d6nQP6D167xpFa44Hk6vtAltuK_5HG4OzkxQkfB6JuE
 FLASK_ENV=development
 FLASK_DEBUG=0
 DEFAULT_SAMPLE_RATE=16000

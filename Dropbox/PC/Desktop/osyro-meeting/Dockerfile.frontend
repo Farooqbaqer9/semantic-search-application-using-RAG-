@@ -1,0 +1,4 @@
+FROM nginx:alpine
+COPY frontend_html.html /usr/share/nginx/html/index.html
+COPY js/ /usr/share/nginx/html/js/
+EXPOSE 80
