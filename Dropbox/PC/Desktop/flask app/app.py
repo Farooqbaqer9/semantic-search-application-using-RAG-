@@ -30,7 +30,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 else:
-    st.error("❌ Gemini API key not found. Please set GEMINI_API_KEY in your .env file.")
+    st.error("Gemini API key not found. Please set GEMINI_API_KEY in your .env file.")
 
 # Initialize embedding model
 @st.cache_resource
@@ -51,40 +51,259 @@ def init_vector_db():
 st.markdown(
     """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@300;400;500;600;700&display=swap');
     
     * {
         font-family: 'Inter', sans-serif;
     }
     
-    body {
-        background-color: #0a0e27;
-        background-image: 
-            linear-gradient(135deg, rgba(255, 107, 53, 0.3) 0%, rgba(59, 130, 246, 0.4) 100%),
-            radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(255, 107, 53, 0.2) 0%, transparent 50%);
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center center;
-        background-attachment: fixed;
-        min-height: 100vh;
-        overflow-x: hidden;
-        position: relative;
+    html, body, .stApp {
+        background: linear-gradient(135deg, #BF360C, #002171, #4A148C, #880E4F, #BF360C, #002171, #4A148C, #880E4F) !important;
+        background-size: 300% 300% !important;
+        animation: gradientShift 8s ease-in-out infinite !important;
+        min-height: 100vh !important;
+        overflow-x: hidden !important;
+        position: relative !important;
+    }
+    
+    /* Background gradient animation */
+    @keyframes gradientShift {
+        0% { 
+            background-position: 0% 50%;
+        }
+        25% { 
+            background-position: 100% 0%;
+        }
+        50% { 
+            background-position: 200% 50%;
+        }
+        75% { 
+            background-position: 100% 100%;
+        }
+        100% { 
+            background-position: 0% 50%;
+        }
     }
     
     .main > div {
-        background: transparent;
+        background: transparent !important;
         padding-top: 2rem;
+    }
+    
+
+    
+    .stApp > div {
+        background: transparent !important;
+    }
+    
+    .css-1d391kg {
+        background: rgba(255, 255, 255, 0.05) !important;
     }
     
     /* Animated gradient border for containers */
     @keyframes borderGlow {
-        0% { border-color: #FF6B35; box-shadow: 0 0 20px rgba(255, 107, 53, 0.3); }
-        50% { border-color: #3B82F6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
-        100% { border-color: #FF6B35; box-shadow: 0 0 20px rgba(255, 107, 53, 0.3); }
+        0% { 
+            border-color: #01579B !important;
+            box-shadow: 
+                0 0 20px rgba(1, 87, 155, 0.6),
+                0 0 40px rgba(1, 87, 155, 0.4),
+                inset 0 0 20px rgba(1, 87, 155, 0.1) !important;
+        }
+        25% { 
+            border-color: #4A148C !important;
+            box-shadow: 
+                0 0 25px rgba(74, 20, 140, 0.6),
+                0 0 50px rgba(74, 20, 140, 0.4),
+                inset 0 0 25px rgba(74, 20, 140, 0.1) !important;
+        }
+        50% { 
+            border-color: #BF360C !important;
+            box-shadow: 
+                0 0 30px rgba(191, 54, 12, 0.7),
+                0 0 60px rgba(191, 54, 12, 0.5),
+                inset 0 0 30px rgba(191, 54, 12, 0.1) !important;
+        }
+        75% { 
+            border-color: #4A148C !important;
+            box-shadow: 
+                0 0 25px rgba(74, 20, 140, 0.6),
+                0 0 50px rgba(74, 20, 140, 0.4),
+                inset 0 0 25px rgba(74, 20, 140, 0.1) !important;
+        }
+        100% { 
+            border-color: #01579B !important;
+            box-shadow: 
+                0 0 20px rgba(1, 87, 155, 0.6),
+                0 0 40px rgba(1, 87, 155, 0.4),
+                inset 0 0 20px rgba(1, 87, 155, 0.1) !important;
+        }
+    }
+    
+    @keyframes sidebarGradientShift {
+        0% { background: linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%); }
+        50% { background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(255, 107, 53, 0.08) 100%); }
+        100% { background: linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%); }
+    }
+    
+    @keyframes blueGlow {
+        0% { 
+            border: 2px solid #01579B !important;
+            box-shadow: 0 0 25px rgba(1, 87, 155, 0.5), 0 0 50px rgba(191, 54, 12, 0.2) !important;
+        }
+        25% { 
+            border: 2px solid #4A148C !important;
+            box-shadow: 0 0 30px rgba(74, 20, 140, 0.5), 0 0 60px rgba(1, 87, 155, 0.3) !important;
+        }
+        50% { 
+            border: 2px solid #BF360C !important;
+            box-shadow: 0 0 35px rgba(191, 54, 12, 0.6), 0 0 70px rgba(74, 20, 140, 0.3) !important;
+        }
+        75% { 
+            border: 2px solid #4A148C !important;
+            box-shadow: 0 0 30px rgba(74, 20, 140, 0.5), 0 0 60px rgba(191, 54, 12, 0.3) !important;
+        }
+        100% { 
+            border: 2px solid #01579B !important;
+            box-shadow: 0 0 25px rgba(1, 87, 155, 0.5), 0 0 50px rgba(191, 54, 12, 0.2) !important;
+        }
     }
     
     .main-container {
+        background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(20px) !important;
+        border-radius: 20px !important;
+        border: 3px solid #01579B !important;
+        padding: 3rem !important;
+        margin: 2rem 0 !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+        animation: borderGlow 4s ease-in-out infinite !important;
+        min-height: 200px !important;
+        position: relative !important;
+    }
+    
+    .search-container {
+        background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(20px) !important;
+        border-radius: 15px !important;
+        border: 3px solid #01579B !important;
+        padding: 3px !important;
+        margin: 1rem 0 !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+        animation: borderGlow 4s ease-in-out infinite !important;
+        position: relative !important;
+        width: auto !important;
+        max-width: fit-content !important;
+        height: 76px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    
+    .stTextInput > div > div > input {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 2px solid #002171 !important;
+        border-radius: 12px !important;
+        color: white !important;
+        font-size: 20px !important;
+        font-weight: 300 !important;
+        padding: 1.5rem 2rem !important;
+        transition: all 0.3s ease !important;
+        backdrop-filter: blur(20px) !important;
+        height: 64px !important;
+        min-height: 64px !important;
+        max-height: 64px !important;
+        letter-spacing: 0.3px !important;
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.4), 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+        animation: blueGlow 3s ease-in-out infinite !important;
+        display: flex !important;
+        align-items: center !important;
+        margin: 0px !important;
+        width: 100% !important;
+        position: relative !important;
+        z-index: 2 !important;
+    }
+    
+    .stTextInput > div > div > input:focus {
+        border-color: #3B82F6 !important;
+        box-shadow: 0 0 30px rgba(59, 130, 246, 0.6), 0 0 60px rgba(59, 130, 246, 0.3) !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+    }
+    
+    .stTextInput > div > div {
+        height: 64px !important;
+        min-height: 64px !important;
+    }
+    
+    .stTextInput > div {
+        height: 64px !important;
+        min-height: 64px !important;
+    }
+    
+    .stTextInput > div > div > input::placeholder {
+        color: rgba(255, 255, 255, 0.6) !important;
+        font-size: 18px !important;
+        font-weight: 300 !important;
+        letter-spacing: 0.3px !important;
+    }
+    
+    .stButton > button {
+        background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(20px) !important;
+        border: 2px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 15px !important;
+        color: white !important;
+        padding: 1.5rem 2rem !important;
+        font-weight: 300 !important;
+        font-size: 20px !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+        animation: borderGlow 3s ease-in-out infinite !important;
+        position: relative !important;
+        overflow: hidden !important;
+        height: 70px !important;
+        min-height: 70px !important;
+        letter-spacing: 0.3px !important;
+    }
+    
+    .stButton > button:before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background: linear-gradient(135deg, #FF6B35 0%, #3B82F6 100%) !important;
+        opacity: 0.8 !important;
+        z-index: -1 !important;
+        border-radius: 13px !important;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-3px) !important;
+        box-shadow: 0 15px 35px rgba(255, 107, 53, 0.6) !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    .stButton > button:hover:before {
+        opacity: 1 !important;
+        background: linear-gradient(135deg, #3B82F6 0%, #FF6B35 100%) !important;
+    }
+    
+    .stButton > button:active {
+        transform: translateY(-1px) !important;
+    }
+    
+    .response-container {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        padding: 2rem;
+        margin: 2rem 0;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        animation: borderGlow 3s ease-in-out infinite;
+    }
+    
+    .source-doc {
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(20px);
         border-radius: 20px;
@@ -93,101 +312,6 @@ st.markdown(
         margin: 1rem 0;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         animation: borderGlow 3s ease-in-out infinite;
-    }
-    
-    .search-container {
-        background: rgba(15, 23, 42, 0.9);
-        border-radius: 20px;
-        border: 2px solid transparent;
-        background-clip: padding-box;
-        padding: 2.5rem;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(25px);
-        -webkit-backdrop-filter: blur(25px);
-        animation: fadeInUp 1.2s ease-out;
-        position: relative;
-        overflow: hidden;
-        border: 2px solid transparent;
-        background-clip: padding-box;
-        background-clip: padding-box;
-    }
-    
-    .search-container::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        border-radius: 20px;
-        border: 2px solid transparent;
-        background: linear-gradient(45deg, #FF6B35, #3B82F6, #FF6B35) border-box;
-        -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-        -webkit-mask-composite: exclude;
-        mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-        mask-composite: exclude;
-        animation: borderGlow 3s ease-in-out infinite;
-    }
-    
-    .stTextInput > div > div > input {
-        background: rgba(255, 255, 255, 0.1);
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        border-radius: 15px;
-        color: white;
-        font-size: 16px;
-        padding: 1rem 1.5rem;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-    }
-    
-    .stTextInput > div > div > input:focus {
-        border-color: #FF6B35;
-        box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
-        background: rgba(255, 255, 255, 0.15);
-    }
-    
-    .stButton > button {
-        background: linear-gradient(135deg, #FF6B35 0%, #3B82F6 100%);
-        color: white;
-        border: none;
-        border-radius: 15px;
-        padding: 0.8rem 2rem;
-        font-weight: 600;
-        font-size: 16px;
-        transition: all 0.3s ease;
-        box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .stButton > button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 35px rgba(255, 107, 53, 0.4);
-        background: linear-gradient(135deg, #3B82F6 0%, #FF6B35 100%);
-    }
-    
-    .stButton > button:active {
-        transform: translateY(-1px);
-    }
-    
-    .response-container {
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 20px;
-        padding: 2rem;
-        margin: 1.5rem 0;
-        border: 2px solid rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(15px);
-        animation: fadeInUp 0.8s ease-out;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    }
-    
-    .source-doc {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        border-left: 4px solid #FF6B35;
-        backdrop-filter: blur(10px);
         transition: all 0.3s ease;
     }
     
@@ -195,33 +319,16 @@ st.markdown(
         background: rgba(255, 255, 255, 0.1);
         transform: translateX(10px);
     }
-    
-    .metric-card {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
-        padding: 1.5rem;
-        text-align: center;
-        backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
-    }
-    
-    .metric-card:hover {
-        background: rgba(255, 255, 255, 0.15);
-        transform: translateY(-5px);
-    }
-    
+
     .sidebar .stFileUploader {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
-        padding: 1rem;
-        border: 2px dashed rgba(255, 255, 255, 0.3);
-        transition: all 0.3s ease;
-    }
-    
-    .sidebar .stFileUploader:hover {
-        border-color: #FF6B35;
-        background: rgba(255, 107, 53, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        padding: 2rem;
+        margin: 1rem 0;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        animation: borderGlow 3s ease-in-out infinite;
     }
     
     /* Animation keyframes */
@@ -266,30 +373,106 @@ st.markdown(
         margin-bottom: 0.5rem;
     }
     
+    .elegant-text {
+        color: #ffffff !important;
+        font-weight: 300 !important;
+        font-size: 2.5rem !important;
+        text-align: center !important;
+        margin: 2rem 0 !important;
+        letter-spacing: 0.5px !important;
+        line-height: 1.2 !important;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+    }
+    
     h2, h3 {
         color: #ffffff;
-        font-weight: 600;
+        font-weight: 300;
+        letter-spacing: 0.3px;
     }
     
     .stMarkdown p {
         color: rgba(255, 255, 255, 0.9);
         line-height: 1.6;
+        font-weight: 300;
+        letter-spacing: 0.2px;
+    }
+    
+    /* All text elements styling */
+    * {
+        font-family: 'Inter', sans-serif;
+        font-weight: 300;
+        letter-spacing: 0.3px;
     }
     
     /* Sidebar styling */
     .css-1d391kg {
-        background: linear-gradient(180deg, rgba(255, 107, 53, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
-        backdrop-filter: blur(20px);
+        background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(30px) !important;
+        border-right: 2px solid #3B82F6 !important;
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), 0 0 50px rgba(59, 130, 246, 0.1) !important;
+        animation: blueGlow 3s ease-in-out infinite !important;
+    }
+    
+    .css-1d391kg h3 {
+        color: rgba(255, 255, 255, 0.95) !important;
+        font-family: 'Playfair Display', serif !important;
+        font-weight: 500 !important;
+        font-size: 1.8rem !important;
+        letter-spacing: 0.8px !important;
+        text-align: center !important;
+        margin-bottom: 2rem !important;
+        text-shadow: 0 0 20px rgba(255, 107, 53, 0.3) !important;
+    }
+    
+    .css-1d391kg .stFileUploader {
+        background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(25px) !important;
+        border: 2px solid #3B82F6 !important;
+        border-radius: 20px !important;
+        padding: 2rem !important;
+        margin: 1.5rem 0 !important;
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), 0 15px 45px rgba(0, 0, 0, 0.15) !important;
+        animation: blueGlow 3s ease-in-out infinite !important;
+        transition: all 0.4s ease !important;
+    }
+    
+    .css-1d391kg .stFileUploader:hover {
+        transform: translateY(-5px) !important;
+        box-shadow: 0 0 30px rgba(59, 130, 246, 0.5), 0 20px 60px rgba(59, 130, 246, 0.2) !important;
+        border-color: #60A5FA !important;
+    }
+    
+    .css-1d391kg .stButton > button {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 2px solid #3B82F6 !important;
+        border-radius: 15px !important;
+        color: white !important;
+        font-family: 'Playfair Display', serif !important;
+        font-weight: 500 !important;
+        font-size: 1.1rem !important;
+        letter-spacing: 0.5px !important;
+        padding: 1rem 2rem !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.3) !important;
+        animation: blueGlow 3s ease-in-out infinite !important;
+    }
+    
+    .css-1d391kg .stButton > button:hover {
+        transform: translateY(-3px) !important;
+        box-shadow: 0 0 30px rgba(59, 130, 246, 0.6), 0 15px 40px rgba(59, 130, 246, 0.3) !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: #60A5FA !important;
     }
     
     .uploadedFile {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 2px solid #3B82F6;
+        padding: 2rem;
         margin: 1rem 0;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        animation: fadeInUp 0.5s ease-out;
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), 0 8px 32px rgba(0, 0, 0, 0.1);
+        animation: blueGlow 3s ease-in-out infinite;
     }
     
     /* Progress bar styling */
@@ -300,10 +483,14 @@ st.markdown(
     
     /* Success/Error message styling */
     .stAlert {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(15px);
-        border-radius: 15px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        padding: 2rem;
+        margin: 1rem 0;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        animation: borderGlow 3s ease-in-out infinite;
     }
     </style>
     """,
@@ -373,56 +560,18 @@ Answer:"""
     except Exception as e:
         return f"Error generating response: {str(e)}"
 
-def display_metrics(collection):
-    """Display database metrics"""
-    try:
-        count = collection.count()
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.markdown(f"""
-            <div class="metric-card">
-                <h3 style="color: #FF6B35; margin: 0;">📄</h3>
-                <h2 style="margin: 0.5rem 0;">{count}</h2>
-                <p style="margin: 0; color: rgba(255,255,255,0.8);">Documents Stored</p>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown(f"""
-            <div class="metric-card">
-                <h3 style="color: #3B82F6; margin: 0;">🔍</h3>
-                <h2 style="margin: 0.5rem 0;">384</h2>
-                <p style="margin: 0; color: rgba(255,255,255,0.8);">Embedding Dimensions</p>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col3:
-            st.markdown(f"""
-            <div class="metric-card">
-                <h3 style="color: #10B981; margin: 0;">⚡</h3>
-                <h2 style="margin: 0.5rem 0;">Cosine</h2>
-                <p style="margin: 0; color: rgba(255,255,255,0.8);">Distance Metric</p>
-            </div>
-            """, unsafe_allow_html=True)
-    except:
-        pass
-
 def main():
     # Title with beautiful styling
-    st.markdown('<h1>🔍 Semantic Search RAG Application</h1>', unsafe_allow_html=True)
-    st.markdown('<p style="text-align: center; font-size: 1.2rem; color: rgba(255,255,255,0.8); margin-bottom: 2rem;">Powered by Google Gemini & ChromaDB Vector Database</p>', unsafe_allow_html=True)
+    st.markdown('<h1>Semantic Search RAG Application</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; font-size: 1.4rem; color: rgba(255,255,255,0.9); margin-bottom: 2rem; font-family: \'Playfair Display\', serif; font-weight: 400; letter-spacing: 0.5px;">Search smarter & discover faster</p>', unsafe_allow_html=True)
     
     # Initialize components
     embedding_model = load_embedding_model()
     collection = init_vector_db()
     
-    # Display metrics
-    display_metrics(collection)
-    
     # Sidebar for file upload
     with st.sidebar:
-        st.markdown("### 📁 Document Management")
+        st.markdown('<h3 style="font-family: \'Playfair Display\', serif; font-weight: 500; font-size: 1.8rem; letter-spacing: 0.8px; text-align: center; margin-bottom: 2rem; color: rgba(255,255,255,0.95); text-shadow: 0 0 20px rgba(255, 107, 53, 0.3);">Document Management</h3>', unsafe_allow_html=True)
         
         uploaded_files = st.file_uploader(
             "Upload Documents",
@@ -432,18 +581,18 @@ def main():
         )
         
         if uploaded_files:
-            st.success(f"✅ {len(uploaded_files)} file(s) selected")
+            st.success(f"{len(uploaded_files)} file(s) selected")
             
             # Show uploaded files
             for file in uploaded_files:
                 st.markdown(f"""
                 <div class="uploadedFile">
-                    📄 {file.name}<br>
+                    {file.name}<br>
                     <small>Size: {file.size / 1024:.1f} KB</small>
                 </div>
                 """, unsafe_allow_html=True)
             
-            if st.button("🚀 Process Documents", use_container_width=True):
+            if st.button("Process Documents", use_container_width=True):
                 progress_bar = st.progress(0)
                 status_text = st.empty()
                 
@@ -484,17 +633,17 @@ def main():
                     
                     progress_bar.progress((idx + 1) / total_files)
                 
-                status_text.text("✅ Processing complete!")
+                status_text.text("Processing complete!")
                 time.sleep(1)
                 status_text.empty()
                 progress_bar.empty()
                 
-                st.success(f"🎉 Successfully processed {processed_chunks} document chunks!")
-                st.experimental_rerun()
+                st.success(f"Successfully processed {processed_chunks} document chunks!")
+                st.rerun()
         
         # Database management
         st.markdown("---")
-        st.markdown("### 🗃️ Database Management")
+        st.markdown('<h3 style="font-family: \'Playfair Display\', serif; font-weight: 500; font-size: 1.6rem; letter-spacing: 0.8px; text-align: center; margin: 2rem 0 1.5rem 0; color: rgba(255,255,255,0.95); text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);">Database Management</h3>', unsafe_allow_html=True)
         
         if st.button("🗑️ Clear Database", use_container_width=True):
             if st.session_state.get('confirm_clear', False):
@@ -503,42 +652,38 @@ def main():
                     all_items = collection.get()
                     if all_items['ids']:
                         collection.delete(ids=all_items['ids'])
-                    st.success("✅ Database cleared!")
+                    st.success("Database cleared!")
                     st.session_state.confirm_clear = False
-                    st.experimental_rerun()
+                    st.rerun()
                 except Exception as e:
                     st.error(f"Error clearing database: {str(e)}")
             else:
                 st.session_state.confirm_clear = True
-                st.warning("⚠️ Click again to confirm database deletion")
+                st.warning("Click again to confirm database deletion")
     
     # Main search interface
-    st.markdown('<div class="search-container">', unsafe_allow_html=True)
-    
-    st.markdown("### 🔍 Ask Your Documents")
+    st.markdown('<h2 class="elegant-text">Ask Your Documents</h2>', unsafe_allow_html=True)
     
     # Search input with better styling
-    col1, col2 = st.columns([4, 1])
+    col1, col2 = st.columns([5, 1])
     
     with col1:
         query = st.text_input(
-            "",
-            placeholder="What would you like to know about your documents?",
+            "Search Query",
+            placeholder="Ask me anything",
             label_visibility="collapsed"
         )
     
     with col2:
-        search_button = st.button("🔍 Search", use_container_width=True, type="primary")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+        search_button = st.button("Search", use_container_width=True, type="primary")
     
     # Search functionality
     if search_button and query:
         if not query.strip():
-            st.warning("⚠️ Please enter a search query")
+            st.warning("Please enter a search query")
         else:
             try:
-                with st.spinner("🔍 Searching through your documents..."):
+                with st.spinner("Searching through your documents..."):
                     # Generate query embedding
                     query_embedding = embedding_model.encode([query])
                     
@@ -564,7 +709,7 @@ def main():
                         st.markdown('</div>', unsafe_allow_html=True)
                         
                         # Show source documents
-                        with st.expander("📄 Source Documents", expanded=False):
+                        with st.expander("Source Documents", expanded=False):
                             for i, (doc, metadata, distance) in enumerate(zip(
                                 results['documents'][0], 
                                 results['metadatas'][0], 
@@ -573,7 +718,7 @@ def main():
                                 similarity = 1 - distance
                                 st.markdown(f"""
                                 <div class="source-doc">
-                                    <h4 style="color: #FF6B35; margin-top: 0;">📄 Source {i+1}</h4>
+                                    <h4 style="color: #FF6B35; margin-top: 0;">Source {i+1}</h4>
                                     <p><strong>File:</strong> {metadata.get('filename', 'Unknown')}</p>
                                     <p><strong>Similarity:</strong> {similarity:.1%}</p>
                                     <p><strong>Content:</strong></p>
@@ -581,33 +726,10 @@ def main():
                                 </div>
                                 """, unsafe_allow_html=True)
                     else:
-                        st.warning("🔍 No relevant documents found. Please upload some documents first or try a different search query.")
+                        st.warning("No relevant documents found. Please upload some documents first or try a different search query.")
             
             except Exception as e:
-                st.error(f"❌ Search error: {str(e)}")
-    
-    # Tips and information
-    if not query:
-        st.markdown("---")
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("""
-            ### 💡 How to Use
-            1. **Upload Documents** - Add PDF, DOCX, PPTX, or TXT files
-            2. **Process Files** - Click "Process Documents" to analyze content
-            3. **Search & Ask** - Enter questions about your documents
-            4. **Get AI Answers** - Receive intelligent responses with sources
-            """)
-        
-        with col2:
-            st.markdown("""
-            ### 🚀 Features
-            - **Multi-format Support** - PDF, Word, PowerPoint, Text
-            - **Semantic Search** - Find content by meaning, not just keywords
-            - **AI-Powered Answers** - Get contextual responses from your data
-            - **Source References** - See exactly where answers come from
-            """)
+                st.error(f"Search error: {str(e)}")
 
 if __name__ == "__main__":
     main()
