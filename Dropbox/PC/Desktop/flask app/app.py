@@ -22,8 +22,18 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Update file paths for Streamlit Cloud compatibility
+# Adjust the path to the .env file
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+
+# Ensure other file paths are relative to the current file's directory
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Example of using BASE_DIR for other paths (if needed in the future)
+# some_file_path = os.path.join(BASE_DIR, 'some_file.txt')
+
 # Load environment variables
-load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Configure Gemini API
